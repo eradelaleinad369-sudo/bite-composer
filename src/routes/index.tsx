@@ -1,29 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MealBuilder } from "@/components/meal-builder/MealBuilder";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Chicken Republic · Build Your Own Meal" },
+      {
+        name: "description",
+        content:
+          "Drag and drop your favorite items into your tray and build the perfect combo meal — fast delivery from Chicken Republic.",
+      },
+      { property: "og:title", content: "Chicken Republic · Build Your Own Meal" },
+      {
+        property: "og:description",
+        content: "Build your custom meal combo with our interactive drag-and-drop builder.",
+      },
     ],
   }),
-  component: Index,
+  component: MealBuilder,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
