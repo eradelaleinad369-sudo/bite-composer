@@ -4,12 +4,15 @@ import type { MenuItem } from "./menu-data";
 export type CartEntry = {
   uid: string;
   item: MenuItem;
+  x: number; // px, relative to tray inner area, top-left of item
+  y: number;
 };
 
 type CartState = {
   entries: CartEntry[];
   name: string;
-  add: (item: MenuItem) => void;
+  add: (item: MenuItem, x: number, y: number) => void;
+  move: (uid: string, x: number, y: number) => void;
   remove: (uid: string) => void;
   clear: () => void;
   setName: (n: string) => void;
@@ -18,9 +21,21 @@ type CartState = {
 export const useCart = create<CartState>((set) => ({
   entries: [],
   name: "",
-  add: (item) =>
+  add: (item, x, y) =>
     set((s) => ({
-      entries: [...s.entries, { uid: `${item.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, item }],
+      entries: [
+        ...s.entries,
+        {
+          uid: `${item.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          item,
+          x,
+          y,
+        },
+      ],
+    })),
+  move: (uid, x, y) =>
+    set((s) => ({
+      entries: s.entries.map((e) => (e.uid === uid ? { ...e, x, y } : e)),
     })),
   remove: (uid) => set((s) => ({ entries: s.entries.filter((e) => e.uid !== uid) })),
   clear: () => set({ entries: [] }),
