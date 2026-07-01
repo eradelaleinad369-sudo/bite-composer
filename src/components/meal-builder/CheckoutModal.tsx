@@ -107,6 +107,9 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Thank you, {name}. Your meal is on the way.
                 </p>
+                <p className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-xs font-mono font-semibold text-foreground">
+                  Order #{orderNumber}
+                </p>
               </div>
             ) : (
               <>
