@@ -9,6 +9,9 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   const name = useCart((s) => s.name);
   const clear = useCart((s) => s.clear);
   const [placed, setPlaced] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const total = cartTotal(entries);
 
   // Group duplicates
@@ -22,13 +25,54 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
     {},
   );
 
-  const handlePlace = () => {
-    setPlaced(true);
-    setTimeout(() => {
-      clear();
-      setPlaced(false);
-      onClose();
-    }, 2200);
+  const generateOrderNumber = () => {
+    const ts = Date.now().toString(36).toUpperCase();
+    const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    return `CR-${ts}-${rand}`;
+  };
+
+  const handlePlace = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const newOrderNumber = generateOrderNumber();
+    const payload = {
+      orderNumber: newOrderNumber,
+      name,
+      total,
+      currency: "NGN",
+      placedAt: new Date().toISOString(),
+      items: Object.values(grouped).map((g) => ({
+        name: g.name,
+        emoji: g.emoji,
+        price: g.price,
+        quantity: g.qty,
+        subtotal: g.price * g.qty,
+      })),
+    };
+    try {
+      const res = await fetch(
+        "https://tenuous-serenity-unborn.ngrok-free.dev/webhook-test/c6725dd8-2f5f-497e-8612-0f0457b2342b",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
+      setOrderNumber(newOrderNumber);
+      setPlaced(true);
+      setTimeout(() => {
+        clear();
+        setPlaced(false);
+        setOrderNumber("");
+        setSubmitting(false);
+        onClose();
+      }, 2600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send order");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -62,6 +106,9 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                 <h3 className="mt-4 text-2xl font-extrabold text-foreground">Order Placed!</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Thank you, {name}. Your meal is on the way.
+                </p>
+                <p className="mt-3 rounded-lg bg-secondary px-3 py-1.5 text-xs font-mono font-semibold text-foreground">
+                  Order #{orderNumber}
                 </p>
               </div>
             ) : (
@@ -102,11 +149,17 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                   </div>
                 </div>
                 <div className="px-6 pb-6">
+                  {error && (
+                    <p className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+                      {error}
+                    </p>
+                  )}
                   <button
                     onClick={handlePlace}
-                    className="w-full rounded-xl bg-primary py-3 text-sm font-extrabold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/30 transition hover:brightness-110 active:scale-[0.98]"
+                    disabled={submitting}
+                    className="w-full rounded-xl bg-primary py-3 text-sm font-extrabold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/30 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Place Order
+                    {submitting ? "Placing…" : "Place Order"}
                   </button>
                 </div>
               </>
