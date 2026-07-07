@@ -2,6 +2,7 @@ import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ShoppingBag } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useCart, cartTotal, type CartEntry } from "@/lib/cart-store";
 import { formatNaira } from "@/lib/menu-data";
 
