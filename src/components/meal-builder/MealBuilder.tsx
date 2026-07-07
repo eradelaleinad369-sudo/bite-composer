@@ -118,6 +118,7 @@ export function MealBuilder() {
           </div>
         )}
       </DragOverlay>
+      <Toaster position="bottom-center" richColors closeButton />
     </DndContext>
   );
 }
