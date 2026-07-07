@@ -1,28 +1,48 @@
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ShoppingBag } from "lucide-react";
+import { X, ShoppingBag, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useCart, cartTotal, type CartEntry } from "@/lib/cart-store";
 import { formatNaira } from "@/lib/menu-data";
 
 const MIN_ORDER = 3000;
 const EXTRA_FEE = 400;
-export const ITEM_SIZE = 72; // px
+export const ITEM_SIZE = 76; // px
 
 function TrayItem({ entry }: { entry: CartEntry }) {
   const remove = useCart((s) => s.remove);
+  const entries = useCart((s) => s.entries);
+  const restore = useCart((s) => s.restore);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `tray-${entry.uid}`,
     data: { uid: entry.uid, kind: "tray" },
   });
 
+  const handleRemove = async () => {
+    const idx = entries.findIndex((e) => e.uid === entry.uid);
+    remove(entry.uid);
+    const { toast } = await import("sonner");
+    toast(`${entry.item.name} removed`, {
+      description: formatNaira(entry.item.price),
+      action: {
+        label: "Undo",
+        onClick: () => restore(entry, idx),
+      },
+      duration: 4000,
+    });
+  };
+
   return (
     <motion.div
       ref={setNodeRef}
-      initial={{ scale: 0.6, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.5, opacity: 0 }}
+      initial={{ scale: 0.4, opacity: 0, rotate: -8 }}
+      animate={{
+        scale: isDragging ? 1.18 : 1,
+        opacity: 1,
+        rotate: isDragging ? 4 : 0,
+      }}
+      exit={{ scale: 0.3, opacity: 0, rotate: 12 }}
       transition={{ type: "spring", stiffness: 380, damping: 22 }}
       style={{
         position: "absolute",
@@ -33,34 +53,47 @@ function TrayItem({ entry }: { entry: CartEntry }) {
         transform: CSS.Translate.toString(transform),
         zIndex: isDragging ? 50 : 1,
         touchAction: "none",
+        filter: isDragging
+          ? "drop-shadow(0 18px 24px rgba(0,0,0,0.35))"
+          : "drop-shadow(0 4px 8px rgba(0,0,0,0.15))",
       }}
       className="group"
     >
       <button
         {...listeners}
         {...attributes}
-        className="relative grid h-full w-full cursor-grab place-items-center rounded-2xl bg-white text-4xl shadow-[0_6px_14px_rgba(0,0,0,0.18)] ring-1 ring-black/5 transition active:cursor-grabbing hover:scale-105"
-        title={`${entry.item.name} — ${formatNaira(entry.item.price)}`}
+        className={`relative grid h-full w-full touch-none place-items-center rounded-2xl bg-white text-4xl ring-1 ring-black/5 transition-shadow ${
+          isDragging
+            ? "cursor-grabbing shadow-[0_0_0_4px_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.35)]"
+            : "cursor-grab shadow-[0_6px_14px_rgba(0,0,0,0.18)]"
+        }`}
+        aria-label={`${entry.item.name}, ${formatNaira(entry.item.price)}. Drag to reposition. Swipe left or right to remove.`}
       >
         {entry.item.image ? (
           <img
             src={entry.item.image}
             alt={entry.item.name}
             className="pointer-events-none h-full w-full select-none rounded-2xl object-cover"
+            draggable={false}
           />
         ) : (
           <span className="pointer-events-none select-none">{entry.item.emoji}</span>
         )}
-        <span className="pointer-events-none absolute -bottom-1 left-1/2 max-w-[90px] -translate-x-1/2 truncate rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
+        <span
+          className={`pointer-events-none absolute -bottom-1.5 left-1/2 max-w-[100px] -translate-x-1/2 truncate rounded-full bg-black/80 px-2 py-0.5 text-[10px] font-semibold text-white transition ${
+            isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          }`}
+        >
           {entry.item.name}
         </span>
       </button>
       <button
-        onClick={() => remove(entry.uid)}
-        className="absolute -right-1.5 -top-1.5 z-10 grid h-6 w-6 place-items-center rounded-full bg-white text-destructive shadow ring-1 ring-black/10 opacity-0 transition group-hover:opacity-100 hover:bg-destructive hover:text-white"
-        aria-label="Remove"
+        onClick={handleRemove}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute -right-2 -top-2 z-20 grid h-7 w-7 place-items-center rounded-full bg-white text-destructive shadow-md ring-1 ring-black/10 transition hover:bg-destructive hover:text-white active:scale-90"
+        aria-label={`Remove ${entry.item.name}`}
       >
-        <X className="h-3.5 w-3.5" />
+        <X className="h-4 w-4" strokeWidth={3} />
       </button>
     </motion.div>
   );
@@ -74,7 +107,6 @@ export function DropZone() {
   const remaining = Math.max(0, MIN_ORDER - total);
   const trayRef = useRef<HTMLDivElement | null>(null);
 
-  // Clamp items into the tray whenever it resizes or new items are added.
   useEffect(() => {
     const el = trayRef.current;
     if (!el) return;
@@ -103,13 +135,14 @@ export function DropZone() {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      {/* Tray */}
       <div className="relative flex-1 p-3">
-        <div
+        <motion.div
           ref={setRefs}
-          className={`relative h-full w-full overflow-hidden rounded-[42px] border-[10px] transition-all ${
+          animate={{ scale: isOver ? 1.01 : 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className={`relative h-full w-full overflow-hidden rounded-[42px] border-[10px] transition-colors ${
             isOver
-              ? "border-red-400 shadow-[0_0_0_8px_rgba(239,68,68,0.18),0_30px_60px_-20px_rgba(220,38,38,0.5)]"
+              ? "border-amber-300 shadow-[0_0_0_10px_rgba(251,191,36,0.25),0_30px_60px_-20px_rgba(220,38,38,0.5)]"
               : "border-red-500 shadow-[0_20px_50px_-15px_rgba(220,38,38,0.45)]"
           }`}
           style={{
@@ -117,7 +150,6 @@ export function DropZone() {
               "radial-gradient(ellipse at 30% 25%, #ff6b6b 0%, #ef4444 45%, #dc2626 100%)",
           }}
         >
-          {/* glossy highlight */}
           <div
             className="pointer-events-none absolute inset-0 rounded-[32px]"
             style={{
@@ -125,39 +157,43 @@ export function DropZone() {
                 "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 35%, rgba(0,0,0,0) 60%)",
             }}
           />
-          {/* inner rim */}
           <div className="pointer-events-none absolute inset-2 rounded-[30px] ring-1 ring-white/15" />
 
-          {/* item counter */}
           <div className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-red-600 shadow">
             <ShoppingBag className="h-3.5 w-3.5" />
             {entries.length} item{entries.length === 1 ? "" : "s"}
           </div>
 
+          {entries.length > 0 && (
+            <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+              Hold & drag to arrange · tap × or swipe to remove
+            </div>
+          )}
+
           {entries.length === 0 && (
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center text-white/90">
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center text-white/95">
               <motion.div
-                animate={isOver ? { scale: 1.15 } : { scale: 1 }}
-                className="mb-3 text-5xl drop-shadow"
+                animate={{ scale: [1, 1.08, 1], rotate: [0, -4, 4, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="mb-3 text-6xl drop-shadow-lg"
               >
                 🍽️
               </motion.div>
-              <p className="text-xl font-extrabold uppercase tracking-[0.2em] drop-shadow">
-                Drop on the tray
+              <p className="flex items-center gap-1.5 text-lg font-extrabold uppercase tracking-[0.18em] drop-shadow">
+                <Sparkles className="h-4 w-4" /> Your tray
               </p>
-              <p className="mt-1 text-sm font-medium text-white/80">
-                Drag items here · rearrange freely
+              <p className="mt-1 text-sm font-medium text-white/85">
+                Tap items on the menu to add them
               </p>
             </div>
           )}
 
-          {/* items */}
           <AnimatePresence>
             {entries.map((e) => (
               <TrayItem key={e.uid} entry={e} />
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
