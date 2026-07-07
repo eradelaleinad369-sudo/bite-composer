@@ -9,6 +9,8 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { MenuPanel } from "./MenuPanel";
 import { DropZone, ITEM_SIZE } from "./DropZone";
 import { CheckoutBar } from "./CheckoutBar";
@@ -18,6 +20,8 @@ import { formatNaira } from "@/lib/menu-data";
 
 export function MealBuilder() {
   const move = useCart((s) => s.move);
+  const remove = useCart((s) => s.remove);
+  const restore = useCart((s) => s.restore);
   const entries = useCart((s) => s.entries);
   const [active, setActive] = useState<MenuItem | null>(null);
 
@@ -38,6 +42,19 @@ export function MealBuilder() {
     if (!uid) return;
     const entry = entries.find((x) => x.uid === uid);
     if (!entry) return;
+
+    // Swipe-to-remove: fast, mostly-horizontal drag
+    if (Math.abs(e.delta.x) > 110 && Math.abs(e.delta.y) < 60) {
+      const idx = entries.findIndex((x) => x.uid === uid);
+      remove(uid);
+      toast(`${entry.item.name} removed`, {
+        description: formatNaira(entry.item.price),
+        action: { label: "Undo", onClick: () => restore(entry, idx) },
+        duration: 4000,
+      });
+      return;
+    }
+
     const overRect = e.over?.rect;
     const newX = entry.x + e.delta.x;
     const newY = entry.y + e.delta.y;
@@ -101,6 +118,7 @@ export function MealBuilder() {
           </div>
         )}
       </DragOverlay>
+      <Toaster position="bottom-center" richColors closeButton />
     </DndContext>
   );
 }
