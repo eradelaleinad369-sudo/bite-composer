@@ -69,8 +69,37 @@ function TrayItem({ entry }: { entry: CartEntry }) {
 export function DropZone() {
   const { isOver, setNodeRef } = useDroppable({ id: "meal-tray" });
   const entries = useCart((s) => s.entries);
+  const move = useCart((s) => s.move);
   const total = cartTotal(entries);
   const remaining = Math.max(0, MIN_ORDER - total);
+  const trayRef = useRef<HTMLDivElement | null>(null);
+
+  // Clamp items into the tray whenever it resizes or new items are added.
+  useEffect(() => {
+    const el = trayRef.current;
+    if (!el) return;
+    const clamp = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (!w || !h) return;
+      const maxX = Math.max(8, w - ITEM_SIZE - 8);
+      const maxY = Math.max(8, h - ITEM_SIZE - 8);
+      for (const e of entries) {
+        const nx = Math.max(8, Math.min(e.x, maxX));
+        const ny = Math.max(8, Math.min(e.y, maxY));
+        if (nx !== e.x || ny !== e.y) move(e.uid, nx, ny);
+      }
+    };
+    clamp();
+    const ro = new ResizeObserver(clamp);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [entries, move]);
+
+  const setRefs = (node: HTMLDivElement | null) => {
+    trayRef.current = node;
+    setNodeRef(node);
+  };
 
   return (
     <div className="flex h-full flex-col gap-4">
