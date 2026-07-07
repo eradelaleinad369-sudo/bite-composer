@@ -106,7 +106,7 @@ export function DropZone() {
       {/* Tray */}
       <div className="relative flex-1 p-3">
         <div
-          ref={setNodeRef}
+          ref={setRefs}
           className={`relative h-full w-full overflow-hidden rounded-[42px] border-[10px] transition-all ${
             isOver
               ? "border-red-400 shadow-[0_0_0_8px_rgba(239,68,68,0.18),0_30px_60px_-20px_rgba(220,38,38,0.5)]"
