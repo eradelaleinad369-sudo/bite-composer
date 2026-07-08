@@ -38,7 +38,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       currency: "NGN",
       placedAt: new Date().toISOString(),
     });
-    const url = `https://tenuous-serenity-unborn.ngrok-free.dev/webhook-test/eb045cc9-5e0b-489d-a3fd-160e0e5f3a3a?${params.toString()}`;
+    const url = `https://tenuous-serenity-unborn.ngrok-free.dev/webhook-test/611aee0b-8ccc-4a5f-82dd-edcd92914776?${params.toString()}`;
     // Fire immediately (don't await) so the webhook is called the moment the user clicks.
     // Use no-cors to avoid CORS preflight blocking the fire-and-forget GET.
     fetch(url, { method: "GET", mode: "no-cors" }).catch((err) =>
