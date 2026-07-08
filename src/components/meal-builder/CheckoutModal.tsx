@@ -87,10 +87,10 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       }
 
       const data = await response.json();
-      // Expecting n8n to respond with { id: <supabase row id> }
-      if (data?.id) {
-        setOrderId(data.id);
-      }
+const orderRow = Array.isArray(data) ? data[0] : data;
+if (orderRow?.id) {
+  setOrderId(orderRow.id);
+}
 
       setPlaced(true);
       setStatus("new");
