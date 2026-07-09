@@ -244,4 +244,4 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       )}
     </AnimatePresence>
   );
-        }
+}
