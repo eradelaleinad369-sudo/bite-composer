@@ -73,7 +73,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
 
     try {
       const response = await fetch(
-        "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout",
+        "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout-",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
