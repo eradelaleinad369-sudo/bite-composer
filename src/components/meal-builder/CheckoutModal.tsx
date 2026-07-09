@@ -5,6 +5,9 @@ import { useCart, cartTotal } from "@/lib/cart-store";
 import { formatNaira } from "@/lib/menu-data";
 import { supabase } from "@/lib/supabase";
 
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiaGxmbHhmdmVmZ3ViYmp1ZGFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MzQxODksImV4cCI6MjA5ODQxMDE4OX0.zzYSmhQyA4rj0q_LQL-tI8e4VxAjQKZPwgR4heOx45k";
+
 type OrderStage = "new" | "preparing" | "ready" | "done";
 
 export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -76,7 +79,11 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
         "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout-",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
           body: JSON.stringify({
             orderNumber,
             name,
@@ -98,11 +105,10 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
         setOrderId(orderRow.id);
       }
 
-
       setPlaced(true);
       setStatus("new");
     } catch (err) {
-      console.error("Webhook failed", err);
+      console.error("Checkout failed", err);
       setError("Something went wrong placing your order. Please try again.");
     }
   };
@@ -238,4 +244,4 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       )}
     </AnimatePresence>
   );
-}
+        }
