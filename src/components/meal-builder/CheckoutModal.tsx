@@ -6,6 +6,7 @@ import { formatNaira } from "@/lib/menu-data";
 import { supabase } from "@/lib/supabase";
 
 const SUPABASE_ANON_KEY = "sb_publishable_yBQbpGGMjBRDqwkID4QfvA_9amBX3Xx";
+
 type OrderStage = "new" | "preparing" | "ready" | "done";
 
 export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -14,6 +15,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   const tableNumber = useCart((s) => s.tableNumber);
   const clear = useCart((s) => s.clear);
   const [placed, setPlaced] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
   const [status, setStatus] = useState<OrderStage>("new");
@@ -59,11 +61,16 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   }, [orderId]);
 
   const handlePlace = async () => {
+    if (submitting) return;
+    setSubmitting(true);
     setError(null);
+
     if (!Number.isInteger(tableNum) || tableNum < 1 || tableNum > 50) {
       setError("Please check your table number and try again. Valid table numbers are 1–50.");
+      setSubmitting(false);
       return;
     }
+
     const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const order = Object.values(grouped).map((g) => ({
       name: g.name,
@@ -108,6 +115,8 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
     } catch (err) {
       console.error("Checkout failed", err);
       setError("Something went wrong placing your order. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -230,9 +239,10 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                 <div className="px-6 pb-6">
                   <button
                     onClick={handlePlace}
-                    className="w-full rounded-xl bg-primary py-3 text-sm font-extrabold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/30 transition hover:brightness-110 active:scale-[0.98]"
+                    disabled={submitting}
+                    className="w-full rounded-xl bg-primary py-3 text-sm font-extrabold uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/30 transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Place Order
+                    {submitting ? "Placing Order..." : "Place Order"}
                   </button>
                 </div>
               </>
