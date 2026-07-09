@@ -76,6 +76,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
           body: JSON.stringify({
             orderNumber,
             name,
+            table_number: tableNum,
             order,
             total,
             currency: "NGN",
