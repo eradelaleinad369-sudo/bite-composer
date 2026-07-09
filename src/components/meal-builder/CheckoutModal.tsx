@@ -43,7 +43,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
         {
           event: "UPDATE",
           schema: "public",
-          table: "Republic_Data",
+          table: "order_tracking",
           filter: `id=eq.${orderId}`,
         },
         (payload) => {
