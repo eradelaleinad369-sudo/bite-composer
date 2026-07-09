@@ -10,12 +10,14 @@ type OrderStage = "new" | "preparing" | "ready" | "done";
 export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const entries = useCart((s) => s.entries);
   const name = useCart((s) => s.name);
+  const tableNumber = useCart((s) => s.tableNumber);
   const clear = useCart((s) => s.clear);
   const [placed, setPlaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
   const [status, setStatus] = useState<OrderStage>("new");
   const total = cartTotal(entries);
+  const tableNum = Number(tableNumber);
 
   const grouped = entries.reduce<Record<number, { name: string; emoji: string; price: number; qty: number }>>(
     (acc, e) => {
