@@ -9,6 +9,20 @@ const SUPABASE_ANON_KEY = "sb_publishable_yBQbpGGMjBRDqwkID4QfvA_9amBX3Xx";
 
 type OrderStage = "new" | "preparing" | "ready" | "done";
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 1): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok && retries > 0) throw new Error(`status ${res.status}`);
+    return res;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 1000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+}
+
 export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const entries = useCart((s) => s.entries);
   const name = useCart((s) => s.name);
@@ -19,6 +33,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
   const [status, setStatus] = useState<OrderStage>("new");
+  const [connected, setConnected] = useState(true);
   const total = cartTotal(entries);
   const tableNum = Number(tableNumber);
 
@@ -43,7 +58,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
         {
           event: "UPDATE",
           schema: "public",
-          table: "order_tracking",
+          table: "Republic_Data",
           filter: `id=eq.${orderId}`,
         },
         (payload) => {
@@ -53,7 +68,9 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
           else if (newStatus === "done") setStatus("done");
         },
       )
-      .subscribe();
+      .subscribe((subStatus) => {
+        setConnected(subStatus === "SUBSCRIBED");
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -80,7 +97,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
     }));
 
     try {
-      const response = await fetch(
+      const response = await fetchWithRetry(
         "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout-",
         {
           method: "POST",
@@ -191,6 +208,11 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                       Thank you, {name}. {orderId ? `Order #${orderId}. ` : ""}
                       We'll notify you the moment it's ready — feel free to stay on this screen.
                     </p>
+                    {!connected && (
+                      <p className="mt-2 text-xs text-amber-600">
+                        Reconnecting... if this persists, check the counter directly.
+                      </p>
+                    )}
                   </>
                 )}
               </div>
