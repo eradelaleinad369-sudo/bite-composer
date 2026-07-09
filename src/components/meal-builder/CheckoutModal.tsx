@@ -73,7 +73,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
 
     try {
       const response = await fetch(
-        "https://tenuous-serenity-unborn.ngrok-free.dev/webhook/611aee0b-8ccc-4a5f-82dd-edcd92914776",
+        "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -90,14 +90,14 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       );
 
       if (!response.ok) {
-        throw new Error(`Webhook returned status ${response.status}`);
+        throw new Error(`Checkout failed with status ${response.status}`);
       }
 
-      const data = await response.json();
-const orderRow = Array.isArray(data) ? data[0] : data;
-if (orderRow?.id) {
-  setOrderId(orderRow.id);
-}
+      const orderRow = await response.json();
+      if (orderRow?.id) {
+        setOrderId(orderRow.id);
+      }
+
 
       setPlaced(true);
       setStatus("new");
