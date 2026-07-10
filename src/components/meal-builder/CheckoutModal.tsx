@@ -32,6 +32,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [status, setStatus] = useState<OrderStage>("new");
   const [connected, setConnected] = useState(true);
   const total = cartTotal(entries);
