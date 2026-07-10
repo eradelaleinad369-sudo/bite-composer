@@ -143,6 +143,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
     clear();
     setPlaced(false);
     setOrderId(null);
+    setOrderNumber(null);
     setStatus("new");
     onClose();
   };
