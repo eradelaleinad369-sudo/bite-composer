@@ -89,7 +89,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       return;
     }
 
-    const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    const newOrderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const order = Object.values(grouped).map((g) => ({
       name: g.name,
       quantity: g.qty,
