@@ -32,7 +32,6 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [status, setStatus] = useState<OrderStage>("new");
   const [connected, setConnected] = useState(true);
   const total = cartTotal(entries);
@@ -89,7 +88,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       return;
     }
 
-    const newOrderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const order = Object.values(grouped).map((g) => ({
       name: g.name,
       quantity: g.qty,
@@ -108,7 +107,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
             Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            orderNumber: newOrderNumber,
+            orderNumber,
             name,
             table_number: tableNum,
             order,
@@ -127,7 +126,6 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
       if (orderRow?.id) {
         setOrderId(orderRow.id);
       }
-      setOrderNumber(orderRow?.orderNumber ?? orderRow?.order_number ?? newOrderNumber);
 
       setPlaced(true);
       setStatus("new");
@@ -143,7 +141,6 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
     clear();
     setPlaced(false);
     setOrderId(null);
-    setOrderNumber(null);
     setStatus("new");
     onClose();
   };
@@ -208,7 +205,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                       Table {tableNum} · {status === "preparing" ? "Preparing your meal" : "Order received"}
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Thank you, {name}. {orderNumber ? `Order ${orderNumber}. ` : ""}
+                      Thank you, {name}. {orderId ? `Order #${orderId}. ` : ""}
                       We'll notify you the moment it's ready — feel free to stay on this screen.
                     </p>
                     {!connected && (
