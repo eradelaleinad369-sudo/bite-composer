@@ -1,18 +1,20 @@
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { categories, categoryIcons, menuItems } from "@/lib/menu-data";
+import { categories, categoryIcons, type MenuItem } from "@/lib/menu-data";
+import { useMenuItems } from "@/lib/use-menu-items";
 import { DraggableMenuItem } from "./DraggableMenuItem";
 
 export function MenuPanel() {
+  const { items, loading, error } = useMenuItems();
   const [open, setOpen] = useState<Record<string, boolean>>({
     "Top Sellers": true,
   });
 
   const grouped = useMemo(() => {
-    const map: Record<string, typeof menuItems> = {};
-    for (const c of categories) map[c] = menuItems.filter((m) => m.category === c);
+    const map: Record<string, MenuItem[]> = {};
+    for (const c of categories) map[c] = items.filter((m) => m.category === c);
     return map;
-  }, []);
+  }, [items]);
 
   return (
     <aside className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
