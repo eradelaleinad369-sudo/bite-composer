@@ -212,6 +212,9 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
                       Thank you, {name}. {orderCode ? `Order ${orderCode}. ` : ""}
                       We'll notify you the moment it's ready — feel free to stay on this screen.
                     </p>
+                    <p className="mt-3 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+                      Please proceed to the counter for payment to confirm your order.
+                    </p>
                     {!connected && (
                       <p className="mt-2 text-xs text-amber-600">
                         Reconnecting... if this persists, check the counter directly.
