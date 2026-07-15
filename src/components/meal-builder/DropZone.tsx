@@ -211,15 +211,6 @@ export function DropZone() {
             {formatNaira(total)}
           </motion.span>
         </div>
-        {remaining > 0 && entries.length > 0 && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Reach <span className="font-semibold text-foreground">{formatNaira(MIN_ORDER)}</span> to
-            avoid extra fee of{" "}
-            <span className="font-semibold text-destructive">{formatNaira(EXTRA_FEE)}</span>
-            {" — "}
-            <span className="text-primary">{formatNaira(remaining)} to go</span>
-          </p>
-        )}
       </div>
     </div>
   );
