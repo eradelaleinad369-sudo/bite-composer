@@ -169,7 +169,7 @@ export function DropZone() {
 
           {entries.length > 0 && (
             <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
-              Hold & drag to arrange · tap × or swipe to remove
+              Hold & drag to arrange.
             </div>
           )}
 
