@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase, type RepublicDataRow } from "@/lib/supabase";
 
-export const Route = createFileRoute("/Republic_Data")({
+export const Route = createFileRoute("/RepublicData")({
   head: () => ({
     meta: [{ title: "Staff Dashboard · Kitchen Orders" }],
   }),
