@@ -98,7 +98,7 @@ export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () =>
 
     try {
       const response = await fetchWithRetry(
-        "https://jbhlflxfvefgubbjudaq.supabase.co/functions/v1/checkout-",
+        "https://xyzxvqcezhthphrvtmuo.supabase.co/functions/v1/dynamic-worker",
         {
           method: "POST",
           headers: {
