@@ -5,7 +5,7 @@ import { useCart, cartTotal } from "@/lib/cart-store";
 import { formatNaira } from "@/lib/menu-data";
 import { supabase } from "@/lib/supabase";
 
-const SUPABASE_ANON_KEY = "sb_publishable_yBQbpGGMjBRDqwkID4QfvA_9amBX3Xx";
+const SUPABASE_ANON_KEY = "sb_publishable_Y9tXxkosMHkUmlYBQdO4Pw_bxclggIC";
 
 type OrderStage = "new" | "preparing" | "ready" | "done";
 
