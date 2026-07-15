@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import { categories, imageForName, type MenuItem } from "./menu-data";
+import { imageForName, type MenuItem } from "./menu-data";
+
+export type Category = {
+  id: number;
+  name: string;
+  display_order: number;
+};
 
 type Row = {
   id: number;
@@ -12,7 +18,34 @@ type Row = {
   is_available: boolean | null;
 };
 
-const categoryOrder = new Map(categories.map((c, i) => [c, i] as const));
+export function useCategories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, display_order")
+        .order("display_order");
+      if (cancelled) return;
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      setCategories((data ?? []) as Category[]);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { categories, loading, error };
+}
 
 export function useMenuItems() {
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -42,12 +75,7 @@ export function useMenuItems() {
           emoji: r.emoji ?? "🍽️",
           image: imageForName(r.name as string) ?? r.image_url ?? undefined,
         }))
-        .sort((a, b) => {
-          const ai = categoryOrder.get(a.category) ?? 999;
-          const bi = categoryOrder.get(b.category) ?? 999;
-          if (ai !== bi) return ai - bi;
-          return a.id - b.id;
-        });
+        .sort((a, b) => a.id - b.id);
       setItems(mapped);
       setLoading(false);
     })();
@@ -57,4 +85,4 @@ export function useMenuItems() {
   }, []);
 
   return { items, loading, error };
-}
+                                                                            }
