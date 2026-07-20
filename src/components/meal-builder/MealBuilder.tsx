@@ -78,7 +78,7 @@ export function MealBuilder() {
         <header className="border-b border-border bg-card">
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-xl text-primary-foreground shadow-md shadow-primary/30">
-              🍗
+              <img src=""C:\Users\USER\Downloads\mykitchen-logo-Dvxwv1eY.jpg alt="Logo"></img>
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-base font-extrabold leading-tight text-foreground sm:text-lg">
